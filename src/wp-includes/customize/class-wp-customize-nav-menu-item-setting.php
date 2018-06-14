@@ -711,10 +711,13 @@ class WP_Customize_Nav_Menu_Item_Setting extends WP_Customize_Setting {
 		$menu_item_value['description'] = wp_unslash( apply_filters( 'content_save_pre', wp_slash( $menu_item_value['description'] ) ) );
 
 		if ( '' !== $menu_item_value['url'] ) {
-			$menu_item_value['url'] = esc_url_raw( $menu_item_value['url'] );
-			if ( '' === $menu_item_value['url'] ) {
+			// Validate URL with the same regex as on the frontend
+			if ( ! preg_match( '/^((\w+:)?\/\/\w.*|\w+:(?!\/\/$)|\/|\?|#)/', $menu_item_value['url'] ) ) {
 				return new WP_Error( 'invalid_url', __( 'Invalid URL.' ) ); // Fail sanitization if URL is invalid.
 			}
+			$menu_item_value['url'] = esc_url_raw( $menu_item_value['url'] );
+		} else {
+			return new WP_Error( 'invalid_url', __( 'Invalid URL.' ) ); // Fail sanitization if URL is empty.
 		}
 		if ( 'publish' !== $menu_item_value['status'] ) {
 			$menu_item_value['status'] = 'draft';
